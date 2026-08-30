@@ -1,5 +1,10 @@
 # ImpliedDensity
 
+[![CI](https://github.com/Leo-Y-Zhang/ImpliedDensity/actions/workflows/ci.yml/badge.svg)](https://github.com/Leo-Y-Zhang/ImpliedDensity/actions/workflows/ci.yml)
+![python](https://img.shields.io/badge/python-3.11%2B-blue)
+![tests](https://img.shields.io/badge/tests-30-brightgreen)
+![licence](https://img.shields.io/badge/licence-proprietary%20source--available-lightgrey)
+
 Option prices contain a probability distribution. Breeden-Litzenberger says the
 risk-neutral density of the underlying at expiry is the second derivative of the
 call price with respect to strike:
@@ -74,10 +79,13 @@ Jacquier's g(k) ≥ 0 condition, evaluated across the grid, so the output is
 Requires `numpy` and `scipy` (`matplotlib` only for the figure).
 
 ```
-python analyse.py                  # cached chain, SVI fit
-python analyse.py --refresh        # pull a fresh chain from Cboe
-python analyse.py --method spline  # the naive version, to see the problem
-python -m unittest discover -s tests -v
+pip install -e .            # or -e '.[plot]' for the figure
+
+implieddensity density      # recover the density, print the diagnostics
+implieddensity chain        # what expiries are available
+implieddensity smile        # the fitted SVI smile and its residuals
+implieddensity density --method spline   # the naive version, to see the problem
+implieddensity verify       # offline correctness gate
 ```
 
 Quotes come from Cboe's public delayed-quote endpoint — no key, no scraping.
@@ -111,7 +119,9 @@ Others worth naming:
 | `src/implieddensity/svi.py` | SVI fit and the g(k) arbitrage check |
 | `src/implieddensity/density.py` | Breeden-Litzenberger, both smile fitters |
 | `src/implieddensity/chain.py` | Cboe chain fetch, OCC symbol parsing, caching |
-| `analyse.py` | end-to-end run, writes `results.json` and `density.png` |
+| `src/implieddensity/analysis.py` | end-to-end run; writes `results.json` |
+| `src/implieddensity/__main__.py` | CLI |
+| `scripts/check_spdx.py` | one-line licence header check, enforced in CI |
 | `make_readme.py` | renders this file from `results.json` |
 
 ## A note on the numbers

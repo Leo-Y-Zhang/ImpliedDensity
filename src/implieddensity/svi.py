@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: LicenseRef-Leo-Y-Zhang-Proprietary
 """SVI smile fitting (Gatheral's Stochastic Volatility Inspired parameterisation).
 
 A cubic spline through quoted implied vols interpolates the smile but does not

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: LicenseRef-Leo-Y-Zhang-Proprietary
 """Tests for the density estimator.
 
 The central one is a round trip: price a chain with Black-Scholes at a constant
@@ -18,11 +19,19 @@ import numpy as np
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
 
-from implieddensity.blackscholes import (   # noqa: E402
-    call_price, put_price, implied_vol, lognormal_pdf, vega)
-from implieddensity.chain import parse_occ, year_fraction   # noqa: E402
-from implieddensity.density import (        # noqa: E402
-    risk_neutral_density, moments, left_tail_probability)
+from implieddensity.blackscholes import (  # noqa: E402
+    call_price,
+    implied_vol,
+    lognormal_pdf,
+    put_price,
+    vega,
+)
+from implieddensity.chain import parse_occ, year_fraction  # noqa: E402
+from implieddensity.density import (  # noqa: E402
+    left_tail_probability,
+    moments,
+    risk_neutral_density,
+)
 
 
 class TestBlackScholes(unittest.TestCase):
@@ -237,7 +246,7 @@ class TestSVI(unittest.TestCase):
     """SVI is the fix for the negative-density problem, so it gets its own tests."""
 
     def setUp(self):
-        from implieddensity.svi import fit_svi, svi_total_variance, butterfly_g
+        from implieddensity.svi import butterfly_g, fit_svi, svi_total_variance
         self.fit_svi = fit_svi
         self.w = svi_total_variance
         self.g = butterfly_g

@@ -29,6 +29,7 @@ def spline_comparison(res):
     """Re-derive the spline-vs-SVI comparison rather than quoting a past run."""
     sys.path.insert(0, os.path.join(HERE, "src"))
     import datetime as dt
+
     from implieddensity import chain
     from implieddensity.density import risk_neutral_density
 
@@ -46,7 +47,7 @@ res = json.load(open(os.path.join(HERE, "results.json"), encoding="utf-8"))
 d = res["diagnostics"]
 if d.get("method") != "svi":
     sys.exit("results.json was produced by the spline fitter; "
-             "run `python analyse.py` (SVI is the default) first")
+             "run `implieddensity density` (SVI is the default) first")
 sp = spline_comparison(res)
 
 V = {

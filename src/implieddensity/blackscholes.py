@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: LicenseRef-Leo-Y-Zhang-Proprietary
 """Black-Scholes pricing and implied volatility.
 
 Kept deliberately small and dependency-light: the density estimator needs to go

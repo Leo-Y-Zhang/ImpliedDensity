@@ -1,0 +1,44 @@
+[project]
+name = "implieddensity"
+version = "0.1.0"
+description = "Recover the risk-neutral density implied by a live option chain, with an SVI smile fit whose no-arbitrage condition is checked rather than assumed."
+requires-python = ">=3.11"
+license = { text = "LicenseRef-Leo-Y-Zhang-Proprietary" }
+dependencies = [
+  # scipy is not optional even though the maths looks like it should be: the
+  # cubic spline, the SVI least-squares fit and the KS tests all come from it.
+  "numpy>=1.26",
+  "scipy>=1.11",
+]
+
+[project.optional-dependencies]
+# matplotlib is needed only to draw density.png. Every number in the README is
+# produced without it, so the analysis runs headless on a machine that has no
+# plotting stack at all.
+plot = ["matplotlib>=3.7"]
+dev = ["ruff>=0.6"]
+
+[project.scripts]
+implieddensity = "implieddensity.__main__:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = [
+  "E501",   # long lines are fine here; the prose in docstrings carries meaning
+  "B905",   # zip() without strict=: every zip in this codebase pairs sequences
+            # that are the same length by construction, and adding strict=True
+            # everywhere would be noise rather than a check
+  "E741",   # a single-letter name is occasionally the clearest one in maths code
+  "E402",   # a few modules deliberately import after a sys.path or backend setup
+]

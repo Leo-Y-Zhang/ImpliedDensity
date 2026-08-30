@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: LicenseRef-Leo-Y-Zhang-Proprietary
 """Fetch and parse a live option chain from Cboe's public delayed quotes.
 
 Cboe publish a full delayed chain as JSON with no key and no scraping. Yahoo's
@@ -46,7 +47,7 @@ def fetch(symbol="SPY", use_cache=True):
     os.makedirs(CACHE_DIR, exist_ok=True)
     path = os.path.join(CACHE_DIR, f"cboe_{symbol}.json")
     if use_cache and os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as fh:
+        with open(path, encoding="utf-8") as fh:
             return json.load(fh)
     req = urllib.request.Request(
         URL.format(symbol=symbol),

@@ -1,0 +1,35 @@
+ImpliedDensity - risk-neutral densities from live option chains
+Copyright 2026 Leo Y. Zhang
+
+This product includes software developed by Leo Y. Zhang.
+
+Proprietary and source-available for evaluation only. No reuse rights are
+granted. See LICENSE for the full terms.
+
+The third-party section below is retained deliberately: those dependencies keep
+their own licences, which are unaffected by the terms covering this work itself.
+
+--------------------------------------------------------------------------------
+THIRD-PARTY DEPENDENCIES
+--------------------------------------------------------------------------------
+
+This project does not bundle or redistribute any third-party code.
+Dependencies are installed from PyPI by the user.
+
+Core (required):
+  numpy   BSD-3-Clause
+  scipy   BSD-3-Clause
+
+Optional extras:
+  [plot] matplotlib   PSF-style (matplotlib licence)
+  [dev]  ruff         MIT
+
+--------------------------------------------------------------------------------
+DATA
+--------------------------------------------------------------------------------
+
+Option quotes are read from Cboe's public delayed-quote endpoint at
+request time and cached locally. No market data is redistributed in this
+repository: results.json contains derived statistics only. Cboe's terms
+govern the quotes themselves.
+
