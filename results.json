@@ -1,0 +1,51 @@
+{
+ "symbol": "SPY",
+ "method": "svi",
+ "asof": "2026-08-30",
+ "spot": 769.35,
+ "expiry": "2026-12-31",
+ "days_to_expiry": 123,
+ "tau_years": 0.336986301369863,
+ "rate": 0.041,
+ "div_yield": 0.012,
+ "atm_implied_vol": 0.14603707487219952,
+ "n_quotes": 181,
+ "median_spread": 3.240000000000009,
+ "diagnostics": {
+  "method": "svi",
+  "n_strikes_used": 181,
+  "strike_min": 460.0,
+  "strike_max": 940.0,
+  "negative_mass_before_clip": -0.0,
+  "raw_integral": 0.9903891083265974,
+  "mean": 780.2989234074496,
+  "forward": 776.9054097963017,
+  "svi_params": {
+   "a": -1.0335506644373702,
+   "b": 0.8615941521745543,
+   "rho": 0.4959763183782156,
+   "m": 0.9052144464096104,
+   "sigma": 1.387608544447522
+  },
+  "vol_rmse": 0.0013170784869310163,
+  "butterfly_g_min": 0.06961184840386078,
+  "butterfly_arbitrage_free": true,
+  "mean_vs_forward": 0.004367988133893386
+ },
+ "implied": {
+  "mean": 780.2989234074496,
+  "sd": 63.7200655629706,
+  "skew": -1.0773376030320585,
+  "excess_kurtosis": 2.298040098837042
+ },
+ "lognormal": {
+  "mean": 774.7787878614149,
+  "sd": 63.112832715745675,
+  "skew": 0.06821319273362636,
+  "excess_kurtosis": -0.2951128983458986
+ },
+ "p_below_minus10pct": 0.08479026843994675,
+ "p_below_minus20pct": 0.022095687331448,
+ "lognormal_p_below_minus10pct": 0.0936746620490727,
+ "lognormal_p_below_minus20pct": 0.003357142773450208
+}
