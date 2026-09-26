@@ -31,8 +31,10 @@ def fit_svi(log_moneyness, total_variance, weights=None):
     """Least-squares fit of the five SVI parameters.
 
     Bounds keep the fit inside the region where the parameterisation is
-    well posed: b >= 0, |rho| < 1, sigma > 0, and a + b*sigma*sqrt(1-rho^2) >= 0
-    so total variance stays non-negative.
+    well posed: b >= 0, |rho| < 1, sigma > 0. The floor on total variance,
+    a + b*sigma*sqrt(1-rho^2) >= 0, is not imposed: a fit can dip below zero
+    far outside the quoted strikes, where svi_implied_vol floors it. Check
+    ``butterfly_g`` over the range that is actually used.
     """
     k = np.asarray(log_moneyness, dtype=float)
     w = np.asarray(total_variance, dtype=float)
