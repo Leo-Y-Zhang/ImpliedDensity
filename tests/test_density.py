@@ -31,6 +31,7 @@ from implieddensity.density import (  # noqa: E402
     left_tail_probability,
     moments,
     risk_neutral_density,
+    risk_neutral_density_svi,
 )
 
 
@@ -238,9 +239,6 @@ class TestOccParsing(unittest.TestCase):
         self.assertAlmostEqual(t, 181 / 365.0, places=9)
 
 
-if __name__ == "__main__":
-    unittest.main(verbosity=2)
-
 
 class TestSVI(unittest.TestCase):
     """SVI is the fix for the negative-density problem, so it gets its own tests."""
@@ -295,3 +293,63 @@ class TestSVI(unittest.TestCase):
             strikes, call_price(s, strikes, r, t, vols), s, r, t)
         self.assertLess(diag["negative_mass_before_clip"], 1e-6)
         self.assertTrue(diag["butterfly_arbitrage_free"])
+
+
+class TestDiscountingAndDividends(unittest.TestCase):
+    """The published run uses r = 4.1% and a 1.2% dividend yield, but every
+    round trip above has no dividend, and normalising the density cancels the
+    e^{rT} factor. These pin both down on a chain where the answer is known."""
+
+    s, r, t, v = 100.0, 0.05, 1.0, 0.22
+
+    def test_black_scholes_with_a_dividend_yield_matches_a_textbook_value(self):
+        # Hull, Options, Futures and Other Derivatives, index option example:
+        # S=930, K=900, r=8%, q=3%, vol=20%, T=2 months gives c = 51.83
+        c = float(call_price(930.0, 900.0, 0.08, 2.0 / 12.0, 0.20, 0.03))
+        self.assertAlmostEqual(c, 51.83, delta=0.01)
+
+    def test_zero_vol_call_is_the_discounted_forward_intrinsic(self):
+        c = float(call_price(100.0, 90.0, 0.05, 1.0, 0.0, 0.03))
+        self.assertAlmostEqual(c, 100.0 * math.exp(-0.03) - 90.0 * math.exp(-0.05),
+                               places=12)
+
+    def test_lognormal_mean_is_the_forward(self):
+        x = np.linspace(1.0, 400.0, 20001)
+        pdf = lognormal_pdf(x, self.s, self.r, self.t, self.v, div_yield=0.04)
+        self.assertAlmostEqual(float(np.trapezoid(x * pdf, x)),
+                               self.s * math.exp((self.r - 0.04) * self.t), places=4)
+
+    def test_raw_integral_is_the_probability_mass_on_the_strike_range(self):
+        """Before normalisation e^{rT} C''(K) integrates to the risk-neutral
+        probability of finishing inside the strike range. Dropping or inverting
+        the discount factor moves it by e^{±rT}, about 5% here."""
+        strikes = np.arange(30.0, 260.0, 1.0)
+        prices = call_price(self.s, strikes, self.r, self.t, self.v)
+        x = np.linspace(strikes[0], strikes[-1], 20001)
+        mass = float(np.trapezoid(lognormal_pdf(x, self.s, self.r, self.t, self.v), x))
+        for fit in (risk_neutral_density, risk_neutral_density_svi):
+            with self.subTest(method=fit.__name__):
+                _, _, diag = fit(strikes, prices, self.s, self.r, self.t)
+                self.assertAlmostEqual(diag["raw_integral"], mass, delta=2e-3)
+
+    def test_round_trip_with_a_dividend_yield(self):
+        """The dividend moves the forward below spot here (q > r), so a sign
+        error in the forward, d1 or the lognormal shows up as a shifted mean."""
+        q = 0.07
+        strikes = np.arange(40.0, 220.0, 1.0)
+        prices = call_price(self.s, strikes, self.r, self.t, self.v, q)
+        forward = self.s * math.exp((self.r - q) * self.t)
+        for fit in (risk_neutral_density, risk_neutral_density_svi):
+            with self.subTest(method=fit.__name__):
+                grid, dens, diag = fit(strikes, prices, self.s, self.r, self.t, q)
+                self.assertAlmostEqual(diag["forward"], forward, places=9)
+                self.assertAlmostEqual(diag["mean_vs_forward"], 0.0, delta=2e-3)
+                truth = lognormal_pdf(grid, self.s, self.r, self.t, self.v, q)
+                truth = truth / np.trapezoid(truth, grid)
+                core = truth > truth.max() * 0.01
+                rel = np.abs(dens[core] - truth[core]) / truth[core].max()
+                self.assertLess(float(rel.max()), 0.05)
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)
