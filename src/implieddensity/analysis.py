@@ -13,8 +13,55 @@ import json
 import numpy as np
 
 from . import chain
-from .blackscholes import implied_vol, lognormal_pdf
-from .density import left_tail_probability, moments, risk_neutral_density, risk_neutral_density_svi
+from .blackscholes import call_price, implied_vol, lognormal_cdf, lognormal_pdf
+from .density import (
+    N_GRID,
+    _density_from_calls,
+    left_tail_probability,
+    moments,
+    risk_neutral_density,
+    risk_neutral_density_svi,
+)
+from .svi import svi_implied_vol
+
+DRAWDOWNS = {"minus10pct": 0.90, "minus20pct": 0.80}
+
+
+def tail_probabilities(grid, q, diag, spot, rate, tau, atm_vol, div_yield):
+    """P(finishing 10% and 20% or more below spot), implied and lognormal.
+
+    The implied density is normalised on the strike range, so the mass below
+    the lowest strike is added back from the diagnostics; without it every
+    left-tail probability is short by that mass. The lognormal benchmark is
+    analytic and needs no grid.
+    """
+    out = {}
+    for name, level in DRAWDOWNS.items():
+        out[f"p_below_{name}"] = left_tail_probability(
+            grid, q, spot * level, diag["mass_below_grid"], diag["mass_above_grid"])
+    for name, level in DRAWDOWNS.items():
+        out[f"lognormal_p_below_{name}"] = float(
+            lognormal_cdf(spot * level, spot, rate, tau, atm_vol, div_yield))
+    return out
+
+
+def tail_probabilities_from_results(res):
+    """Recompute the published tail probabilities from a results.json alone.
+
+    The SVI fit is recorded in full, so the density can be rebuilt on the same
+    grid without the option chain it was fitted to -- which is how a published
+    number is checked, or corrected, after the delayed quotes are gone.
+    """
+    d = res["diagnostics"]
+    if d.get("method") != "svi":
+        raise ValueError("only an SVI result records the smile it was fitted with")
+    spot, rate, tau, q_div = res["spot"], res["rate"], res["tau_years"], res["div_yield"]
+    grid = np.linspace(d["strike_min"], d["strike_max"], N_GRID)
+    vol_grid = np.clip(svi_implied_vol(grid, d["forward"], tau, d["svi_params"]), 1e-4, 5.0)
+    c_grid = call_price(spot, grid, rate, tau, vol_grid, q_div)
+    q, _, _, below, above = _density_from_calls(grid, c_grid, rate, tau)
+    diag = {"mass_below_grid": below, "mass_above_grid": above}
+    return tail_probabilities(grid, q, diag, spot, rate, tau, res["atm_implied_vol"], q_div)
 
 
 def pick_expiry(payload, target_days: int = 120):
@@ -65,11 +112,8 @@ def run(symbol="SPY", rate=0.041, div_yield=0.012, target_days=120,
         "n_quotes": int(len(calls["strike"])),
         "median_spread": float(np.median(calls["spread"])),
         "diagnostics": diag, "implied": m, "lognormal": ln_m,
-        "p_below_minus10pct": left_tail_probability(grid, q, spot * 0.90),
-        "p_below_minus20pct": left_tail_probability(grid, q, spot * 0.80),
-        "lognormal_p_below_minus10pct": left_tail_probability(grid, ln, spot * 0.90),
-        "lognormal_p_below_minus20pct": left_tail_probability(grid, ln, spot * 0.80),
     }
+    out.update(tail_probabilities(grid, q, diag, spot, rate, tau, float(atm_vol), div_yield))
     with open(out_path, "w", encoding="utf-8") as fh:
         json.dump(out, fh, indent=1)
 

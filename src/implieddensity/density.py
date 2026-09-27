@@ -18,6 +18,10 @@ from scipy.interpolate import CubicSpline
 
 from .blackscholes import call_price, implied_vol
 
+# Points on the strike grid the density is evaluated on. Recorded here so that a
+# published result can be rebuilt from its fitted smile on the same grid.
+N_GRID = 800
+
 
 def implied_vol_curve(strikes, prices, spot, rate, tau, div_yield=0.0):
     """Invert each quote to implied vol, dropping the ones that will not invert."""
@@ -52,8 +56,33 @@ def smooth_vol_spline(strikes, vols, smoothing_window=0):
     return CubicSpline(np.log(k), v, extrapolate=True), k
 
 
+def _density_from_calls(grid, c_grid, rate, tau):
+    """Breeden-Litzenberger on a call curve sampled on ``grid``.
+
+    Returns the density clipped and normalised on the grid, the clipped
+    negative mass, the raw integral, and the risk-neutral mass below and above
+    the grid. The normalised density describes the distribution *conditional*
+    on finishing inside the strike range; the outside masses come from the call
+    slope, P(S_T < K) = 1 + e^{rT} dC/dK, which is known at the ends of the
+    range even though the density beyond them is not.
+    """
+    disc = np.exp(rate * tau)
+    q = disc * np.gradient(np.gradient(c_grid, grid), grid)
+
+    negative_mass = float(-np.trapezoid(np.minimum(q, 0.0), grid))
+    q = np.maximum(q, 0.0)
+    total = float(np.trapezoid(q, grid))
+    if total <= 0:
+        raise ValueError("recovered density has no positive mass")
+
+    slope = np.gradient(c_grid, grid, edge_order=2)
+    mass_below = float(np.clip(1.0 + disc * slope[0], 0.0, 1.0))
+    mass_above = float(np.clip(-disc * slope[-1], 0.0, 1.0))
+    return q / total, negative_mass, total, mass_below, mass_above
+
+
 def risk_neutral_density_svi(strikes, prices, spot, rate, tau, div_yield=0.0,
-                             n_grid=800, k_lo=None, k_hi=None):
+                             n_grid=N_GRID, k_lo=None, k_hi=None):
     """As risk_neutral_density, but with the smile fitted by SVI.
 
     The spline version interpolates the quoted vols exactly and inherits their
@@ -78,14 +107,7 @@ def risk_neutral_density_svi(strikes, prices, spot, rate, tau, div_yield=0.0,
 
     vol_grid = np.clip(svi_implied_vol(grid, forward, tau, params), 1e-4, 5.0)
     c_grid = call_price(spot, grid, rate, tau, vol_grid, div_yield)
-    q = np.exp(rate * tau) * np.gradient(np.gradient(c_grid, grid), grid)
-
-    negative_mass = float(-np.trapezoid(np.minimum(q, 0.0), grid))
-    q = np.maximum(q, 0.0)
-    total = float(np.trapezoid(q, grid))
-    if total <= 0:
-        raise ValueError("recovered density has no positive mass")
-    q = q / total
+    q, negative_mass, total, below, above = _density_from_calls(grid, c_grid, rate, tau)
 
     g = butterfly_g(np.log(grid / forward), params)
     fitted = svi_implied_vol(k_used, forward, tau, params)
@@ -96,6 +118,8 @@ def risk_neutral_density_svi(strikes, prices, spot, rate, tau, div_yield=0.0,
         "strike_max": float(k_used.max()),
         "negative_mass_before_clip": negative_mass,
         "raw_integral": total,
+        "mass_below_grid": below,
+        "mass_above_grid": above,
         "mean": float(np.trapezoid(grid * q, grid)),
         "forward": float(forward),
         "svi_params": params,
@@ -109,7 +133,7 @@ def risk_neutral_density_svi(strikes, prices, spot, rate, tau, div_yield=0.0,
 
 
 def risk_neutral_density(strikes, prices, spot, rate, tau, div_yield=0.0,
-                         n_grid=800, k_lo=None, k_hi=None, smoothing_window=0):
+                         n_grid=N_GRID, k_lo=None, k_hi=None, smoothing_window=0):
     """Return (grid, density) with the density normalised to integrate to 1.
 
     Negative values produced by residual curvature noise are clipped to zero
@@ -129,17 +153,7 @@ def risk_neutral_density(strikes, prices, spot, rate, tau, div_yield=0.0,
     vol_grid = spline(np.log(grid))
     vol_grid = np.clip(vol_grid, 1e-4, 5.0)
     c_grid = call_price(spot, grid, rate, tau, vol_grid, div_yield)
-
-    d1 = np.gradient(c_grid, grid)
-    d2 = np.gradient(d1, grid)
-    q = np.exp(rate * tau) * d2
-
-    negative_mass = float(-np.trapezoid(np.minimum(q, 0.0), grid))
-    q = np.maximum(q, 0.0)
-    total = float(np.trapezoid(q, grid))
-    if total <= 0:
-        raise ValueError("recovered density has no positive mass")
-    q = q / total
+    q, negative_mass, total, below, above = _density_from_calls(grid, c_grid, rate, tau)
 
     diagnostics = {
         "n_strikes_used": int(len(k_used)),
@@ -147,6 +161,8 @@ def risk_neutral_density(strikes, prices, spot, rate, tau, div_yield=0.0,
         "strike_max": float(k_sorted.max()),
         "negative_mass_before_clip": negative_mass,
         "raw_integral": total,
+        "mass_below_grid": below,
+        "mass_above_grid": above,
         "mean": float(np.trapezoid(grid * q, grid)),
         "forward": float(spot * np.exp((rate - div_yield) * tau)),
     }
@@ -168,9 +184,25 @@ def moments(grid, density):
     return {"mean": m1, "sd": sd, "skew": skew, "excess_kurtosis": kurt}
 
 
-def left_tail_probability(grid, density, threshold):
-    """Risk-neutral probability of finishing below ``threshold``."""
-    mask = grid <= threshold
-    if not mask.any():
+def left_tail_probability(grid, density, threshold, mass_below=0.0, mass_above=0.0):
+    """Risk-neutral probability of finishing below ``threshold``.
+
+    ``density`` is taken as the distribution conditional on finishing inside
+    the grid (it is normalised here), and ``mass_below`` and ``mass_above`` are
+    the probabilities of finishing below and above it, as reported in the
+    density diagnostics. The integral runs to ``threshold`` exactly, with the
+    density interpolated linearly between the grid points either side.
+    """
+    grid = np.asarray(grid, dtype=float)
+    density = np.asarray(density, dtype=float)
+    if threshold < grid[0]:
+        if mass_below > 0:
+            raise ValueError(f"threshold {threshold} is below the grid, where only "
+                             "the total mass is known, not how it is spread")
         return 0.0
-    return float(np.trapezoid(density[mask], grid[mask]))
+    threshold = min(threshold, grid[-1])
+    inside = grid < threshold
+    x = np.append(grid[inside], threshold)
+    y = np.append(density[inside], np.interp(threshold, grid, density))
+    conditional = float(np.trapezoid(y, x)) / float(np.trapezoid(density, grid))
+    return float(mass_below + (1.0 - mass_below - mass_above) * conditional)

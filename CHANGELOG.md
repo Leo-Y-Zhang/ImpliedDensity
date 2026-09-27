@@ -20,6 +20,19 @@ repository's documents are meant not to do.
 - **CLI** (`implieddensity density|chain|smile|verify`), packaging, and an
   offline correctness gate reachable as a first-class command.
 
+### Fixed
+
+- **Left-tail probabilities were understated.** The density is normalised on
+  the quoted strike range (460-940 on the published chain), which silently
+  dropped the 0.73% of risk-neutral mass below the lowest strike, and the tail
+  integral stopped at the last grid point below the threshold rather than at
+  the threshold. The mass outside the range is now read from the call slope
+  and added back. Recomputed from the SVI fit recorded in `results.json` (the
+  chain itself is not re-fetched): P(down 10%) 8.48% -> 9.21%, P(down 20%)
+  2.21% -> 2.94%, lognormal P(down 10%) 9.37% -> 9.41% (the lognormal is now
+  analytic), and the 20%-drawdown ratio to the lognormal 6.6x -> 8.6x. Skew,
+  kurtosis and the figure are unchanged.
+
 ### Notes
 
 - Smoothing the smile and truncating to liquid strikes were both tried before

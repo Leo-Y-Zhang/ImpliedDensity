@@ -110,6 +110,14 @@ Others worth naming:
   **far** tail — asserted below 65, 70 and 75 on a spot of 100, and deliberately
   not at 80, where the comparison reverses because skew shifts the bulk right as
   well as stretching the tail
+- a left-tail probability includes the risk-neutral mass below the lowest
+  quoted strike, read from the call slope there (<<mass_below>> on this chain), and
+  integrates to the threshold itself rather than the grid point before it: a
+  lognormal chain quoted only from 70 up must still give the analytic
+  P(S < 80)
+- the published tail probabilities are recomputed from the SVI fit recorded in
+  `results.json`, so a number in the table that the code no longer produces
+  fails the suite
 
 ## Layout
 

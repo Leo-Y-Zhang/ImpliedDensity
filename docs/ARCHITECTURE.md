@@ -38,6 +38,10 @@ a five-parameter fit residual instead of into the curvature.
   returning a shape nobody should trust.
 - The grid is truncated at the traded strike range, so the mean falls
   slightly short of the forward. That shortfall is reported, not hidden.
+  The density is normalised on that range, so it is the distribution
+  conditional on finishing inside it; the moments are of that conditional
+  distribution. Tail probabilities add back the mass outside the range,
+  which the call slope gives exactly: P(S_T < K) = 1 + e^{rT} dC/dK.
 - Cboe quotes are delayed, and the rate and dividend yield are assumed
   constants passed in by the caller.
 
