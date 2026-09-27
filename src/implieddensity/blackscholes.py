@@ -103,3 +103,10 @@ def lognormal_pdf(s, spot, rate, tau, vol, div_yield=0.0):
     with np.errstate(divide="ignore", invalid="ignore"):
         out = np.exp(-((np.log(s) - m) ** 2) / (2 * sd ** 2)) / (s * sd * SQRT_2PI)
     return np.where(s > 0, out, 0.0)
+
+
+def lognormal_cdf(s, spot, rate, tau, vol, div_yield=0.0):
+    """Risk-neutral P(S_T <= s) under Black-Scholes: N(-d2) at strike s."""
+    s = np.asarray(s, dtype=float)
+    _, d2 = d1_d2(spot, np.where(s > 0, s, 1.0), rate, tau, vol, div_yield)
+    return np.where(s > 0, _norm_cdf(-d2), 0.0)

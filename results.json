@@ -18,6 +18,8 @@
   "strike_max": 940.0,
   "negative_mass_before_clip": -0.0,
   "raw_integral": 0.9903891083265974,
+  "mass_below_grid": 0.007341104603599158,
+  "mass_above_grid": 0.0022295858069580855,
   "mean": 780.2989234074496,
   "forward": 776.9054097963017,
   "svi_params": {
@@ -44,8 +46,8 @@
   "skew": 0.06821319273362636,
   "excess_kurtosis": -0.2951128983458986
  },
- "p_below_minus10pct": 0.08479026843994675,
- "p_below_minus20pct": 0.022095687331448,
- "lognormal_p_below_minus10pct": 0.0936746620490727,
- "lognormal_p_below_minus20pct": 0.003357142773450208
+ "p_below_minus10pct": 0.0921375293052347,
+ "p_below_minus20pct": 0.029405389921741656,
+ "lognormal_p_below_minus10pct": 0.0941356857714391,
+ "lognormal_p_below_minus20pct": 0.0034145417482434604
 }

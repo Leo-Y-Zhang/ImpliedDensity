@@ -67,6 +67,7 @@ V = {
     "p20": f"{res['p_below_minus20pct']:.2%}",
     "ln_p10": f"{res['lognormal_p_below_minus10pct']:.2%}",
     "ln_p20": f"{res['lognormal_p_below_minus20pct']:.2%}",
+    "mass_below": f"{d['mass_below_grid']:.2%}",
     "p20_ratio": f"{res['p_below_minus20pct'] / res['lognormal_p_below_minus20pct']:.1f}",
     "svi_neg": f"{100 * d['negative_mass_before_clip'] / d['raw_integral']:.2f}",
     "svi_mean_err": f"{d['mean_vs_forward']:+.2%}",

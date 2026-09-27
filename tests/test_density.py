@@ -9,6 +9,7 @@ was literally given, nothing it says about a real chain is worth reading.
 from __future__ import annotations
 
 import datetime as dt
+import json
 import math
 import os
 import sys
@@ -22,6 +23,7 @@ sys.path.insert(0, os.path.join(
 from implieddensity.blackscholes import (  # noqa: E402
     call_price,
     implied_vol,
+    lognormal_cdf,
     lognormal_pdf,
     put_price,
     vega,
@@ -212,6 +214,33 @@ class TestMoments(unittest.TestCase):
         pdf = np.exp(-0.5 * x ** 2) / math.sqrt(2 * math.pi)
         self.assertAlmostEqual(left_tail_probability(x, pdf, 0.0), 0.5, places=4)
 
+    def test_left_tail_integrates_up_to_the_threshold_between_grid_points(self):
+        """A threshold between two grid points must be integrated to exactly,
+        not to the last grid point below it. On a uniform density over [0, 1]
+        with ten intervals, P(X <= 0.15) is 0.15, not 0.1."""
+        x = np.linspace(0.0, 1.0, 11)
+        pdf = np.ones_like(x)
+        self.assertAlmostEqual(left_tail_probability(x, pdf, 0.15), 0.15, places=12)
+        self.assertAlmostEqual(left_tail_probability(x, pdf, 0.0), 0.0, places=12)
+        self.assertAlmostEqual(left_tail_probability(x, pdf, 1.0), 1.0, places=12)
+
+    def test_left_tail_includes_the_mass_below_the_grid(self):
+        """The density is normalised on the strike range, so it describes the
+        distribution conditional on finishing inside it. The unconditional tail
+        probability is the mass below the range plus the in-range mass times
+        the conditional one: 0.02 + (1 - 0.02 - 0.03) * 0.5 here."""
+        x = np.linspace(0.0, 1.0, 11)
+        pdf = np.ones_like(x)
+        p = left_tail_probability(x, pdf, 0.5, mass_below=0.02, mass_above=0.03)
+        self.assertAlmostEqual(p, 0.02 + 0.95 * 0.5, places=12)
+
+    def test_left_tail_below_the_grid_is_refused_when_mass_lies_there(self):
+        x = np.linspace(0.0, 1.0, 11)
+        pdf = np.ones_like(x)
+        self.assertEqual(left_tail_probability(x, pdf, -0.5), 0.0)
+        with self.assertRaises(ValueError):
+            left_tail_probability(x, pdf, -0.5, mass_below=0.02)
+
 
 class TestOccParsing(unittest.TestCase):
     def test_parses_a_real_symbol(self):
@@ -332,6 +361,43 @@ class TestDiscountingAndDividends(unittest.TestCase):
                 _, _, diag = fit(strikes, prices, self.s, self.r, self.t)
                 self.assertAlmostEqual(diag["raw_integral"], mass, delta=2e-3)
 
+    def test_mass_outside_the_strike_range_is_measured_from_the_call_slope(self):
+        """P(S_T < K) = 1 + e^{rT} dC/dK, so the mass below the lowest strike
+        and above the highest is known exactly even though the density there is
+        not. On a lognormal chain both must match the analytic tails."""
+        strikes = np.arange(70.0, 140.0, 1.0)
+        prices = call_price(self.s, strikes, self.r, self.t, self.v, 0.02)
+        below = float(lognormal_cdf(strikes[0], self.s, self.r, self.t, self.v, 0.02))
+        above = 1.0 - float(lognormal_cdf(strikes[-1], self.s, self.r, self.t, self.v, 0.02))
+        self.assertGreater(below, 0.04)   # the truncation is not negligible here
+        for fit in (risk_neutral_density, risk_neutral_density_svi):
+            with self.subTest(method=fit.__name__):
+                _, _, diag = fit(strikes, prices, self.s, self.r, self.t, 0.02)
+                self.assertAlmostEqual(diag["mass_below_grid"], below, delta=1e-4)
+                self.assertAlmostEqual(diag["mass_above_grid"], above, delta=1e-4)
+
+    def test_tail_probability_on_a_truncated_chain_matches_the_lognormal(self):
+        """End to end: a lognormal chain quoted only from 70 up must still give
+        the analytic P(S_T < 80) once the mass below 70 is added back. Before
+        it was, the normalised density understated it substantially."""
+        strikes = np.arange(70.0, 140.0, 1.0)
+        prices = call_price(self.s, strikes, self.r, self.t, self.v)
+        truth = float(lognormal_cdf(80.0, self.s, self.r, self.t, self.v))
+        for fit in (risk_neutral_density, risk_neutral_density_svi):
+            with self.subTest(method=fit.__name__):
+                grid, q, diag = fit(strikes, prices, self.s, self.r, self.t)
+                p = left_tail_probability(grid, q, 80.0, diag["mass_below_grid"],
+                                          diag["mass_above_grid"])
+                self.assertAlmostEqual(p, truth, delta=5e-4)
+
+    def test_lognormal_cdf_is_the_integral_of_the_pdf(self):
+        x = np.linspace(1e-6, 90.0, 200001)
+        pdf = lognormal_pdf(x, self.s, self.r, self.t, self.v, 0.03)
+        self.assertAlmostEqual(
+            float(lognormal_cdf(90.0, self.s, self.r, self.t, self.v, 0.03)),
+            float(np.trapezoid(pdf, x)), places=7)
+
+
     def test_round_trip_with_a_dividend_yield(self):
         """The dividend moves the forward below spot here (q > r), so a sign
         error in the forward, d1 or the lognormal shows up as a shifted mean."""
@@ -349,6 +415,24 @@ class TestDiscountingAndDividends(unittest.TestCase):
                 core = truth > truth.max() * 0.01
                 rel = np.abs(dens[core] - truth[core]) / truth[core].max()
                 self.assertLess(float(rel.max()), 0.05)
+
+
+class TestPublishedResults(unittest.TestCase):
+    """results.json records the fitted SVI smile, so every published tail
+    probability can be recomputed offline from it. This pins the published
+    numbers to the code: change either and this fails."""
+
+    def test_published_tail_probabilities_follow_from_the_committed_smile(self):
+        from implieddensity.analysis import tail_probabilities_from_results
+        path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                            "results.json")
+        with open(path, encoding="utf-8") as fh:
+            res = json.load(fh)
+        recomputed = tail_probabilities_from_results(res)
+        self.assertEqual(len(recomputed), 4)
+        for key, value in recomputed.items():
+            with self.subTest(key=key):
+                self.assertAlmostEqual(res[key], value, places=9)
 
 
 if __name__ == "__main__":

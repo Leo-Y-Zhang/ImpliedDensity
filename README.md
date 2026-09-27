@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Leo-Y-Zhang/ImpliedDensity/actions/workflows/ci.yml/badge.svg)](https://github.com/Leo-Y-Zhang/ImpliedDensity/actions/workflows/ci.yml)
 ![python](https://img.shields.io/badge/python-3.11%2B-blue)
-![tests](https://img.shields.io/badge/tests-35-brightgreen)
+![tests](https://img.shields.io/badge/tests-42-brightgreen)
 ![licence](https://img.shields.io/badge/licence-proprietary%20source--available-lightgrey)
 
 Option prices contain a probability distribution. Breeden-Litzenberger says the
@@ -29,11 +29,11 @@ Fitted to 181 two-sided SPY call quotes on 2026-08-30, spot
 |---|---|---|
 | skew | **-1.08** | +0.07 |
 | excess kurtosis | **+2.30** | -0.30 |
-| P(down 10% or more) | 8.48% | 9.37% |
-| P(down 20% or more) | **2.21%** | 0.34% |
+| P(down 10% or more) | 9.21% | 9.41% |
+| P(down 20% or more) | **2.94%** | 0.34% |
 
 The market's distribution is nothing like the Black-Scholes bell. It is strongly
-left-skewed, and it prices a 20% drawdown as **6.6 times** more likely
+left-skewed, and it prices a 20% drawdown as **8.6 times** more likely
 than a lognormal at the same at-the-money volatility. That gap is the crash risk
 the smile is pricing, expressed as a probability rather than a vol number.
 
@@ -93,7 +93,7 @@ Yahoo's option endpoint now returns 401 without a session crumb and is not used.
 
 ## Tests
 
-35 tests, offline and deterministic. The important one is a round trip:
+42 tests, offline and deterministic. The important one is a round trip:
 price a synthetic chain at a known constant volatility, run the full estimator
 over those prices, and require the recovered density to match the analytic
 lognormal to within 5% of peak. An estimator that cannot recover a density it
@@ -110,6 +110,14 @@ Others worth naming:
   **far** tail — asserted below 65, 70 and 75 on a spot of 100, and deliberately
   not at 80, where the comparison reverses because skew shifts the bulk right as
   well as stretching the tail
+- a left-tail probability includes the risk-neutral mass below the lowest
+  quoted strike, read from the call slope there (0.73% on this chain), and
+  integrates to the threshold itself rather than the grid point before it: a
+  lognormal chain quoted only from 70 up must still give the analytic
+  P(S < 80)
+- the published tail probabilities are recomputed from the SVI fit recorded in
+  `results.json`, so a number in the table that the code no longer produces
+  fails the suite
 
 ## Layout
 
