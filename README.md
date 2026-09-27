@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Leo-Y-Zhang/ImpliedDensity/actions/workflows/ci.yml/badge.svg)](https://github.com/Leo-Y-Zhang/ImpliedDensity/actions/workflows/ci.yml)
 ![python](https://img.shields.io/badge/python-3.11%2B-blue)
-![tests](https://img.shields.io/badge/tests-30-brightgreen)
+![tests](https://img.shields.io/badge/tests-35-brightgreen)
 ![licence](https://img.shields.io/badge/licence-proprietary%20source--available-lightgrey)
 
 Option prices contain a probability distribution. Breeden-Litzenberger says the
@@ -93,7 +93,7 @@ Yahoo's option endpoint now returns 401 without a session crumb and is not used.
 
 ## Tests
 
-30 tests, offline and deterministic. The important one is a round trip:
+35 tests, offline and deterministic. The important one is a round trip:
 price a synthetic chain at a known constant volatility, run the full estimator
 over those prices, and require the recovered density to match the analytic
 lognormal to within 5% of peak. An estimator that cannot recover a density it
