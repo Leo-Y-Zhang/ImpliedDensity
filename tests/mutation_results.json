@@ -1,0 +1,438 @@
+{
+  "before": [
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "puts-included",
+      "line": 82,
+      "status": "survived"
+    },
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "other-expiries-included",
+      "line": 82,
+      "status": "survived"
+    },
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "one-sided-accepted",
+      "line": 85,
+      "status": "survived"
+    },
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "crossed-accepted",
+      "line": 87,
+      "status": "survived"
+    },
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "min-bid-exclusive",
+      "line": 87,
+      "status": "survived"
+    },
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "mid-is-ask",
+      "line": 90,
+      "status": "survived"
+    },
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "spread-negated",
+      "line": 93,
+      "status": "survived"
+    },
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "strikes-unsorted",
+      "line": 95,
+      "status": "survived"
+    },
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "strike-scale",
+      "line": 41,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_parses_a_fractional_strike"
+      ]
+    },
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "refresh-ignored",
+      "line": 49,
+      "status": "survived"
+    },
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "year-fraction-negative",
+      "line": 111,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_year_fraction_is_never_negative"
+      ]
+    },
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "expiries-descending",
+      "line": 69,
+      "status": "survived"
+    },
+    {
+      "module": "src/implieddensity/blackscholes.py",
+      "id": "zero-vol-not-degenerate",
+      "line": 43,
+      "status": "survived"
+    },
+    {
+      "module": "src/implieddensity/blackscholes.py",
+      "id": "no-upper-band",
+      "line": 79,
+      "status": "killed",
+      "command": "python -m ruff check .",
+      "failures": []
+    },
+    {
+      "module": "src/implieddensity/blackscholes.py",
+      "id": "no-lower-band",
+      "line": 79,
+      "status": "killed",
+      "command": "python -m ruff check .",
+      "failures": []
+    },
+    {
+      "module": "src/implieddensity/blackscholes.py",
+      "id": "loose-tolerance",
+      "line": 89,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_mass_outside_the_strike_range_is_measured_from_the_call_slope"
+      ]
+    },
+    {
+      "module": "src/implieddensity/blackscholes.py",
+      "id": "vega-no-sqrt-tau",
+      "line": 61,
+      "status": "survived"
+    },
+    {
+      "module": "src/implieddensity/blackscholes.py",
+      "id": "cdf-wrong-tail",
+      "line": 112,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_lognormal_cdf_is_the_integral_of_the_pdf"
+      ]
+    },
+    {
+      "module": "src/implieddensity/blackscholes.py",
+      "id": "d1-ignores-dividend",
+      "line": 32,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_black_scholes_with_a_dividend_yield_matches_a_textbook_value"
+      ]
+    },
+    {
+      "module": "src/implieddensity/density.py",
+      "id": "density-discount-inverted",
+      "line": 69,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_mass_outside_the_strike_range_is_measured_from_the_call_slope"
+      ]
+    },
+    {
+      "module": "src/implieddensity/density.py",
+      "id": "svi-forward-dividend-sign",
+      "line": 100,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_round_trip_with_a_dividend_yield"
+      ]
+    },
+    {
+      "module": "src/implieddensity/density.py",
+      "id": "arbitrage-flag-always-true",
+      "line": 128,
+      "status": "survived"
+    },
+    {
+      "module": "src/implieddensity/svi.py",
+      "id": "svi-wrong-root-sign",
+      "line": 27,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_published_tail_probabilities_follow_from_the_committed_smile"
+      ]
+    },
+    {
+      "module": "src/implieddensity/svi.py",
+      "id": "svi-five-points",
+      "line": 43,
+      "status": "survived"
+    },
+    {
+      "module": "src/implieddensity/svi.py",
+      "id": "butterfly-missing-half",
+      "line": 75,
+      "status": "survived"
+    }
+  ],
+  "after": [
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "puts-included",
+      "line": 82,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_keeps_only_usable_calls_of_the_expiry_sorted_by_strike"
+      ]
+    },
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "other-expiries-included",
+      "line": 82,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_keeps_only_usable_calls_of_the_expiry_sorted_by_strike"
+      ]
+    },
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "one-sided-accepted",
+      "line": 85,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_one_sided_quotes_are_dropped_even_without_a_minimum_bid"
+      ]
+    },
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "crossed-accepted",
+      "line": 87,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_keeps_only_usable_calls_of_the_expiry_sorted_by_strike"
+      ]
+    },
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "min-bid-exclusive",
+      "line": 87,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_keeps_only_usable_calls_of_the_expiry_sorted_by_strike"
+      ]
+    },
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "mid-is-ask",
+      "line": 90,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_keeps_only_usable_calls_of_the_expiry_sorted_by_strike"
+      ]
+    },
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "spread-negated",
+      "line": 93,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_keeps_only_usable_calls_of_the_expiry_sorted_by_strike"
+      ]
+    },
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "strikes-unsorted",
+      "line": 95,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_keeps_only_usable_calls_of_the_expiry_sorted_by_strike"
+      ]
+    },
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "strike-scale",
+      "line": 41,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_keeps_only_usable_calls_of_the_expiry_sorted_by_strike"
+      ]
+    },
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "refresh-ignored",
+      "line": 49,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_refresh_bypasses_the_cache_and_rewrites_it"
+      ]
+    },
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "year-fraction-negative",
+      "line": 111,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_year_fraction_is_never_negative"
+      ]
+    },
+    {
+      "module": "src/implieddensity/chain.py",
+      "id": "expiries-descending",
+      "line": 69,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_expiries_are_distinct_and_ascending_and_skip_unparseable_rows"
+      ]
+    },
+    {
+      "module": "src/implieddensity/blackscholes.py",
+      "id": "zero-vol-not-degenerate",
+      "line": 43,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_zero_vol_exactly_at_the_forward_is_worth_nothing_not_nan"
+      ]
+    },
+    {
+      "module": "src/implieddensity/blackscholes.py",
+      "id": "no-upper-band",
+      "line": 79,
+      "status": "killed",
+      "command": "python -m ruff check .",
+      "failures": []
+    },
+    {
+      "module": "src/implieddensity/blackscholes.py",
+      "id": "no-lower-band",
+      "line": 79,
+      "status": "killed",
+      "command": "python -m ruff check .",
+      "failures": []
+    },
+    {
+      "module": "src/implieddensity/blackscholes.py",
+      "id": "loose-tolerance",
+      "line": 89,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_mass_outside_the_strike_range_is_measured_from_the_call_slope"
+      ]
+    },
+    {
+      "module": "src/implieddensity/blackscholes.py",
+      "id": "vega-no-sqrt-tau",
+      "line": 61,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_vega_is_the_derivative_of_the_price_in_vol"
+      ]
+    },
+    {
+      "module": "src/implieddensity/blackscholes.py",
+      "id": "cdf-wrong-tail",
+      "line": 112,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_lognormal_cdf_is_the_integral_of_the_pdf"
+      ]
+    },
+    {
+      "module": "src/implieddensity/blackscholes.py",
+      "id": "d1-ignores-dividend",
+      "line": 32,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_black_scholes_with_a_dividend_yield_matches_a_textbook_value"
+      ]
+    },
+    {
+      "module": "src/implieddensity/density.py",
+      "id": "density-discount-inverted",
+      "line": 69,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_mass_outside_the_strike_range_is_measured_from_the_call_slope"
+      ]
+    },
+    {
+      "module": "src/implieddensity/density.py",
+      "id": "svi-forward-dividend-sign",
+      "line": 100,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_round_trip_with_a_dividend_yield"
+      ]
+    },
+    {
+      "module": "src/implieddensity/density.py",
+      "id": "arbitrage-flag-always-true",
+      "line": 128,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_a_smile_with_butterfly_arbitrage_is_flagged"
+      ]
+    },
+    {
+      "module": "src/implieddensity/svi.py",
+      "id": "svi-wrong-root-sign",
+      "line": 27,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_a_smile_with_butterfly_arbitrage_is_flagged"
+      ]
+    },
+    {
+      "module": "src/implieddensity/svi.py",
+      "id": "svi-five-points",
+      "line": 43,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_fit_needs_six_points"
+      ]
+    },
+    {
+      "module": "src/implieddensity/svi.py",
+      "id": "butterfly-missing-half",
+      "line": 75,
+      "status": "killed",
+      "command": "python -m unittest discover -f -s tests",
+      "failures": [
+        "FAIL: test_a_smile_with_butterfly_arbitrage_is_flagged"
+      ]
+    }
+  ]
+}
